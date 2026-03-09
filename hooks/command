@@ -70,11 +70,11 @@ fi
 
 if [[ -n "$copy_in_host_path" ]]; then
   if [[ -d "$copy_in_host_path" ]]; then
-    echo "--- :anka: Copying ${copy_in_host_path} to ${job_image_name}:${copy_in_vm_path}"
+    echo "~~~ :anka: Copying ${copy_in_host_path} to ${job_image_name}:${copy_in_vm_path}"
     # shellcheck disable=SC2086
     plugin_prompt_and_run anka $ANKA_DEBUG cp -a "$copy_in_host_path" "${job_image_name}:${copy_in_vm_path}"
   else
-    echo "--- :anka: Skipping copy-in (${copy_in_host_path} does not exist on host)"
+    echo "~~~ :anka: Skipping copy-in (${copy_in_host_path} does not exist on host)"
   fi
 fi
 
@@ -83,7 +83,7 @@ if [[ -z "${BUILDKITE_JOB_ID:-}" ]]; then
   exit 1
 fi
 
-bootstrap_args=("--job" "$BUILDKITE_JOB_ID" "--phases" "checkout,command")
+bootstrap_args=("--job" "$BUILDKITE_JOB_ID" "--phases" "command" "--build-path" "/Volumes/host/buildkite")
 
 add_bootstrap_arg_if_set() {
   local environment_variable_name="$1"
@@ -109,7 +109,6 @@ add_bootstrap_arg_if_set "BUILDKITE_PIPELINE_SLUG" "--pipeline"
 add_bootstrap_arg_if_set "BUILDKITE_PIPELINE_PROVIDER" "--pipeline-provider"
 add_bootstrap_arg_if_set "BUILDKITE_ARTIFACT_PATHS" "--artifact-upload-paths"
 add_bootstrap_arg_if_set "BUILDKITE_ARTIFACT_UPLOAD_DESTINATION" "--artifact-upload-destination"
-add_bootstrap_arg_if_set "BUILDKITE_BUILD_PATH" "--build-path"
 add_bootstrap_arg_if_set "BUILDKITE_HOOKS_PATH" "--hooks-path"
 add_bootstrap_arg_if_set "BUILDKITE_ADDITIONAL_HOOKS_PATHS" "--additional-hooks-paths"
 add_bootstrap_arg_if_set "BUILDKITE_PLUGINS_PATH" "--plugins-path"
@@ -124,7 +123,7 @@ else
 fi
 
 if [[ -n "$wait_time_seconds" ]]; then
-  echo "--- :anka: Waiting ${wait_time_seconds}s for VM time sync"
+  echo "~~~ :anka: Waiting ${wait_time_seconds}s for VM time sync"
   # shellcheck disable=SC2086
   plugin_prompt_and_run anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" sleep "$wait_time_seconds"
 fi
@@ -144,7 +143,7 @@ if [[ -z "$vm_agent_path" ]]; then
     echo "buildkite-agent not found on host (checked PATH); cannot copy into VM." >&2
     exit 1
   fi
-  echo "--- :anka: buildkite-agent not in VM; copying from host ($host_agent_path) to /usr/local/bin" >&2
+  echo "~~~ :anka: buildkite-agent not in VM; copying from host ($host_agent_path) to /usr/local/bin" >&2
   # shellcheck disable=SC2086
   plugin_prompt_and_run anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" bash -c 'set -x; if [ ! -d /usr/local/bin ]; then sudo mkdir -p /usr/local/bin && sudo chown "$(whoami)" /usr/local/bin; fi'
   # shellcheck disable=SC2086
@@ -161,7 +160,7 @@ set -e
 
 copy_out_exit_code=0
 if [[ -n "$copy_out_vm_path" ]]; then
-  echo "--- :anka: Copying ${job_image_name}:${copy_out_vm_path} to ${copy_out_host_path}"
+  echo "~~~ :anka: Copying ${job_image_name}:${copy_out_vm_path} to ${copy_out_host_path}"
   mkdir -p "$copy_out_host_path"
   set +e
   # Copy contents (not the folder); trailing /. on source copies directory contents into dest
