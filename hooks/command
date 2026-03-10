@@ -15,6 +15,11 @@ cleanup_on_cancel() {
 }
 trap cleanup_on_cancel SIGTERM SIGINT
 
+if ! plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG start $job_image_name; then
+  echo "ERROR: Failed to start VM ${job_image_name}." >&2
+  exit 1
+fi
+
 run_args=()
 
 # Use the agent's env file when available (avoids long -e arg lists and printf errors).
@@ -29,7 +34,6 @@ if [[ -n "${BUILDKITE_ENV_FILE:-}" && -f "${BUILDKITE_ENV_FILE}" ]]; then
   # This fixes the issue where the VM gets literal quotes, causing buildkite-agent API calls to fail (e.g. jobs/%22019c8d47...%22 -> 404).
   sed -E 's/^([^=]+)="(.*)"$/\1=\2/' "${BUILDKITE_ENV_FILE}" > "${anka_env_file}"
   run_args+=("--env-file" "${anka_env_file}")
-  [[ -n "${BUILDKITE_AGENT_ACCESS_TOKEN:-}" ]] && run_args+=("-e" "BUILDKITE_AGENT_ACCESS_TOKEN=${BUILDKITE_AGENT_ACCESS_TOKEN}")
 else
   for var in $(printf '%s\n' "${!BUILDKITE_@}" | sort -u); do
     [[ -n "${!var:-}" ]] && run_args+=("-e" "$var=${!var}")
@@ -120,7 +124,7 @@ if [[ -z "$vm_agent_path" ]]; then
   plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG cp -a "$host_agent_path" "${job_image_name}:/usr/local/bin/"
 fi
 
-echo "+++ Executing commands in $job_image_name"
+echo "+++ :anka: Executing commands in $job_image_name"
 set +e
 # script -q forces a PTY so stdout is line-buffered; prevents command output appearing under wrong section
 # Run each newline-separated command from BUILDKITE_COMMAND sequentially via bash -c
