@@ -13,14 +13,14 @@ echo ":anka: Cloning $(plugin_read_config VM_NAME) to $job_image_name"
 plugin_prompt_and_run anka version
 plugin_prompt_and_run anka $ANKA_DEBUG clone "$(plugin_read_config VM_NAME)" "$job_image_name"
 plugin_prompt_and_run anka $ANKA_DEBUG license show
-echo "\033[90m$\033[0m RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license show"
+echo "$ RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license show"
 RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license show
 plugin_prompt_and_run sudo anka license show
 plugin_prompt_and_run whoami
-echo "\033[90m$\033[0m RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate"
-RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate
-echo "\033[90m$\033[0m sudo RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate"
+echo "$ sudo RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate"
 sudo RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate
+echo "$ RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate"
+RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate
 
 ################################
 # Mount the build path to the VM
