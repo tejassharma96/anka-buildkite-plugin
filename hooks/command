@@ -78,40 +78,10 @@ if [[ -n "$copy_in_host_path" ]]; then
   fi
 fi
 
-if [[ -z "${BUILDKITE_JOB_ID:-}" ]]; then
-  echo "BUILDKITE_JOB_ID must be set in order to run buildkite-agent bootstrap."
+if [[ -z "${BUILDKITE_COMMAND:-}" ]]; then
+  echo "BUILDKITE_COMMAND is not set; nothing to run." >&2
   exit 1
 fi
-
-bootstrap_args=("--job" "$BUILDKITE_JOB_ID" "--phases" "command" "--build-path" "/Volumes/host/buildkite")
-
-add_bootstrap_arg_if_set() {
-  local environment_variable_name="$1"
-  local bootstrap_flag="$2"
-  local bootstrap_value="${!environment_variable_name:-}"
-  if [[ -n "$bootstrap_value" ]]; then
-    bootstrap_args+=("$bootstrap_flag" "$bootstrap_value")
-  fi
-}
-
-add_bootstrap_arg_if_set "BUILDKITE_COMMAND" "--command"
-add_bootstrap_arg_if_set "BUILDKITE_REPO" "--repository"
-add_bootstrap_arg_if_set "BUILDKITE_COMMIT" "--commit"
-add_bootstrap_arg_if_set "BUILDKITE_BRANCH" "--branch"
-add_bootstrap_arg_if_set "BUILDKITE_TAG" "--tag"
-add_bootstrap_arg_if_set "BUILDKITE_REFSPEC" "--refspec"
-add_bootstrap_arg_if_set "BUILDKITE_PLUGINS" "--plugins"
-add_bootstrap_arg_if_set "BUILDKITE_PULL_REQUEST" "--pullrequest"
-add_bootstrap_arg_if_set "BUILDKITE_AGENT_NAME" "--agent"
-add_bootstrap_arg_if_set "BUILDKITE_AGENT_META_DATA_QUEUE" "--queue"
-add_bootstrap_arg_if_set "BUILDKITE_ORGANIZATION_SLUG" "--organization"
-add_bootstrap_arg_if_set "BUILDKITE_PIPELINE_SLUG" "--pipeline"
-add_bootstrap_arg_if_set "BUILDKITE_PIPELINE_PROVIDER" "--pipeline-provider"
-add_bootstrap_arg_if_set "BUILDKITE_ARTIFACT_PATHS" "--artifact-upload-paths"
-add_bootstrap_arg_if_set "BUILDKITE_ARTIFACT_UPLOAD_DESTINATION" "--artifact-upload-destination"
-add_bootstrap_arg_if_set "BUILDKITE_HOOKS_PATH" "--hooks-path"
-add_bootstrap_arg_if_set "BUILDKITE_ADDITIONAL_HOOKS_PATHS" "--additional-hooks-paths"
-add_bootstrap_arg_if_set "BUILDKITE_PLUGINS_PATH" "--plugins-path"
 
 # anka run has no --wait-time; when wait-time is enabled, sleep in the VM for sntp to sync
 if [[ -n "$wait_time_seconds" ]] && [[ "$wait_time_seconds" =~ ^(true|on|1)$ ]]; then
@@ -150,12 +120,13 @@ if [[ -z "$vm_agent_path" ]]; then
   plugin_prompt_and_run anka $ANKA_DEBUG cp -a "$host_agent_path" "${job_image_name}:/usr/local/bin/"
 fi
 
-echo "+++ Executing buildkite-agent bootstrap in $job_image_name"
+echo "+++ Executing commands in $job_image_name"
 set +e
-# script -q forces a PTY so stdout is line-buffered; prevents command output appearing under wrong section (e.g. Uploading artifacts)
+# script -q forces a PTY so stdout is line-buffered; prevents command output appearing under wrong section
+# Run each newline-separated command from BUILDKITE_COMMAND sequentially via bash -c
 # shellcheck disable=SC2086
-plugin_prompt_and_run anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" script -q /dev/null buildkite-agent bootstrap "${bootstrap_args[@]:+${bootstrap_args[@]}}"
-bootstrap_exit_code=$?
+plugin_prompt_and_run anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" script -q /dev/null bash -c "$BUILDKITE_COMMAND"
+command_exit_code=$?
 set -e
 
 copy_out_exit_code=0
@@ -170,8 +141,8 @@ if [[ -n "$copy_out_vm_path" ]]; then
   set -e
 fi
 
-if [[ "$bootstrap_exit_code" -ne 0 ]]; then
-  exit "$bootstrap_exit_code"
+if [[ "$command_exit_code" -ne 0 ]]; then
+  exit "$command_exit_code"
 fi
 
 if [[ "$copy_out_exit_code" -ne 0 ]]; then
