@@ -29,6 +29,8 @@ configuration:
       type: boolean
     anka-debug:
       type: boolean
+    anka-sudo:
+      type: boolean
     cleanup:
       type: boolean
     pre-commands:

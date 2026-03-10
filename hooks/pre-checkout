@@ -14,7 +14,7 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 lock_file enable # If two pulls or a clone and a pull happen on the same host, anka's ram file will get a messed up. Lock file should prevent another pull/clone while one is already happening.
 
 # shellcheck disable=SC2086
-if ( ! anka $ANKA_DEBUG list "$(plugin_read_config VM_NAME)" ) || [[ $(plugin_read_config ALWAYS_PULL false) =~ (true|on|1|shrink) ]]; then
+if ( ! $ANKA_SUDO anka $ANKA_DEBUG list "$(plugin_read_config VM_NAME)" ) || [[ $(plugin_read_config ALWAYS_PULL false) =~ (true|on|1|shrink) ]]; then
   pull_args=()
   if [[ -n $(plugin_read_config VM_REGISTRY_TAG) ]]; then
     pull_args+=("--tag" "$(plugin_read_config VM_REGISTRY_TAG)")
@@ -27,7 +27,7 @@ if ( ! anka $ANKA_DEBUG list "$(plugin_read_config VM_NAME)" ) || [[ $(plugin_re
   fi
   echo "~~~ :anka: Pulling $(plugin_read_config VM_NAME) from Anka Registry"
   # shellcheck disable=SC2086
-  plugin_prompt_and_run anka $ANKA_DEBUG registry $FAILOVER_REGISTRY pull "${pull_args[@]:+${pull_args[@]}}" "$(plugin_read_config VM_NAME)" # ${pull_args[@]:+${pull_args[@]}}: pull_args[@]: unbound variable : https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
+  plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG registry $FAILOVER_REGISTRY pull "${pull_args[@]:+${pull_args[@]}}" "$(plugin_read_config VM_NAME)" # ${pull_args[@]:+${pull_args[@]}}: pull_args[@]: unbound variable : https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
 else
   echo ":anka: $(plugin_read_config VM_NAME) is already present on the host"
 fi

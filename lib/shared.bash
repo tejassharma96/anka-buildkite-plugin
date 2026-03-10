@@ -72,7 +72,7 @@ function in_array() {
 }
 
 # Clean up job VM (delete or suspend) and lock file. Safe to call from trap or pre-exit.
-# Requires: job_image_name, BUILDKITE_JOB_ID, plugin_read_config, plugin_prompt_and_run, ANKA_DEBUG
+# Requires: job_image_name, BUILDKITE_JOB_ID, plugin_read_config, plugin_prompt_and_run, ANKA_DEBUG, ANKA_SUDO
 function cleanup_job_vm() {
   [[ -z "${job_image_name:-}" ]] && return 0
   lock_file disable
@@ -80,12 +80,12 @@ function cleanup_job_vm() {
   if $(plugin_read_config CLEANUP true); then
     echo "--- :anka: Cleaning up clone (cancellation or exit)" >&2
     # shellcheck disable=SC2086
-    anka $ANKA_DEBUG delete --yes "$job_image_name" 2>/dev/null || true
+    $ANKA_SUDO anka $ANKA_DEBUG delete --yes "$job_image_name" 2>/dev/null || true
     echo "$job_image_name has been deleted" >&2
   else
     echo "--- :anka: Suspending clone (cancellation or exit)" >&2
     # shellcheck disable=SC2086
-    anka $ANKA_DEBUG suspend "$job_image_name" 2>/dev/null || true
+    $ANKA_SUDO anka $ANKA_DEBUG suspend "$job_image_name" 2>/dev/null || true
     echo "$job_image_name has been suspended" >&2
   fi
 }
@@ -119,18 +119,25 @@ function lock_file() {
 export BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG=$(plugin_read_config ANKA_DEBUG false)
 "$BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG" && export ANKA_DEBUG="--debug" || export ANKA_DEBUG=
 
+###########
+# Anka sudo
+export BUILDKITE_PLUGIN_ANKA_ANKA_SUDO=$(plugin_read_config ANKA_SUDO true)
+[[ "$BUILDKITE_PLUGIN_ANKA_ANKA_SUDO" =~ ^(true|on|1)$ ]] && export ANKA_SUDO="sudo" || export ANKA_SUDO=
+
 ###################
 # Registry Failover
 export BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES=$(plugin_read_list FAILOVER_REGISTRIES)
 export FAILOVER_REGISTRY=
 if [[ -n "${BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES}" ]]; then
-  if [[ ! $(anka registry list) ]]; then
-    # Remove the default (which should be down)
-    DEFAULT_REGISTRY=$(anka registry list-repos -d | grep id | cut -d' ' -f8)
+  # shellcheck disable=SC2086
+  if [[ ! $($ANKA_SUDO anka registry list) ]]; then
+    # shellcheck disable=SC2086
+    DEFAULT_REGISTRY=$($ANKA_SUDO anka registry list-repos -d | grep id | cut -d' ' -f8)
     for registry in $BUILDKITE_PLUGIN_ANKA_FAILOVER_REGISTRIES; do # Grab the first available registry from the list
       [[ "$registry" == "$DEFAULT_REGISTRY" ]] && continue
       [[ -n "$FAILOVER_REGISTRY" ]] && continue
-      [[ $(anka registry -r "$registry" list) ]] && export FAILOVER_REGISTRY="-r $registry" || continue
+      # shellcheck disable=SC2086
+      [[ $($ANKA_SUDO anka registry -r "$registry" list) ]] && export FAILOVER_REGISTRY="-r $registry" || continue
     done
   fi
 fi

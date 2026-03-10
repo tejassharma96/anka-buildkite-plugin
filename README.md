@@ -72,6 +72,7 @@ Hook | Description
 | `wait-time` | Run `sleep` inside the VM before bootstrap for sntp time sync. Use `true` for 10s default, or an integer for custom seconds. | `true` or `15` |
 | `debug` | Enable debug output within the plugin. | `true` |
 | `anka-debug` | Enable `anka --debug` output when running anka commands. | `true` |
+| `anka-sudo` | Prefix all `anka` commands with `sudo`. Defaults to `true`. | `false` |
 | `cleanup` | Set to `false` to leave cloned images for investigation. Use `cancel-grace-period=60` on the agent. | `false` |
 | `pre-commands` | **(DANGEROUS)** Commands to run on the HOST before guest commands. E.g. download artifacts. Double-escape variables. | YAML list |
 | `post-commands` | **(DANGEROUS)** Commands to run on the HOST after guest commands. E.g. upload artifacts. VM names are `${vm_name}-${BUILDKITE_JOB_ID}`. | YAML list |
