@@ -14,10 +14,10 @@ plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG clone "$(plugin_read_config VM
 
 ################################
 # Mount the build path to the VM
-if [[ -n "${BUILDKITE_BUILD_PATH}" ]]; then
-  echo ":anka: Mounting ${BUILDKITE_BUILD_PATH} to ${job_image_name}"
+if [[ -n "${BUILDKITE_BUILD_CHECKOUT_PATH}" ]]; then
+  echo ":anka: Mounting ${BUILDKITE_BUILD_CHECKOUT_PATH} to ${job_image_name}"
   # shellcheck disable=SC2086
-  plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG modify $job_image_name mount "${BUILDKITE_BUILD_PATH}":buildkite
+  plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG modify $job_image_name mount "${BUILDKITE_BUILD_CHECKOUT_PATH}":buildkite_build
 fi
 
 #####################################

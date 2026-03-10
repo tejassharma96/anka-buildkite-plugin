@@ -22,6 +22,9 @@ fi
 
 run_args=()
 
+# Use the mounted checkout path as the working directory
+run_args+=("--workdir" "/Volumes/host/buildkite_build")
+
 # Use the agent's env file when available (avoids long -e arg lists and printf errors).
 # BUILDKITE_AGENT_ACCESS_TOKEN is not in the env file; pass it explicitly for artifact/meta-data.
 # Anka's --env-file parser passes values literally; it does not strip Bash-style quotes. The Buildkite
@@ -34,6 +37,7 @@ if [[ -n "${BUILDKITE_ENV_FILE:-}" && -f "${BUILDKITE_ENV_FILE}" ]]; then
   # This fixes the issue where the VM gets literal quotes, causing buildkite-agent API calls to fail (e.g. jobs/%22019c8d47...%22 -> 404).
   sed -E 's/^([^=]+)="(.*)"$/\1=\2/' "${BUILDKITE_ENV_FILE}" > "${anka_env_file}"
   run_args+=("--env-file" "${anka_env_file}")
+  [[ -n "${BUILDKITE_AGENT_ACCESS_TOKEN:-}" ]] && run_args+=("-e" "BUILDKITE_AGENT_ACCESS_TOKEN=${BUILDKITE_AGENT_ACCESS_TOKEN}")
 else
   for var in $(printf '%s\n' "${!BUILDKITE_@}" | sort -u); do
     [[ -n "${!var:-}" ]] && run_args+=("-e" "$var=${!var}")
