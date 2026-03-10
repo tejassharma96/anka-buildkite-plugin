@@ -17,9 +17,9 @@ plugin_prompt_and_run RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --d
 plugin_prompt_and_run sudo anka license show
 plugin_prompt_and_run whoami
 echo "\033[90m$\033[0m RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate"
-RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate
+RLM_DEBUG="" RLM_DIAGNOSTICS="" RLM_ACT_TIMEOUT=30000 anka --debug license validate
 echo "\033[90m$\033[0m sudo RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate"
-sudo RLM_DEBUG= RLM_DIAGNOSTICS= RLM_ACT_TIMEOUT=30000 anka --debug license validate
+sudo RLM_DEBUG="" RLM_DIAGNOSTICS="" RLM_ACT_TIMEOUT=30000 anka --debug license validate
 
 ################################
 # Mount the build path to the VM
