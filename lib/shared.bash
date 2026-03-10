@@ -114,6 +114,10 @@ function lock_file() {
   fi
 }
 
+function is_ec2_instance() {
+  curl -s -m 2 http://169.254.169.254/latest/meta-data/ >/dev/null 2>&1
+}
+
 ##############
 # Anka --debug
 export BUILDKITE_PLUGIN_ANKA_ANKA_DEBUG=$(plugin_read_config ANKA_DEBUG false)

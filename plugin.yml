@@ -45,6 +45,8 @@ configuration:
       type: integer
     modify-mac:
       type: string
+    ec2-networking:
+      type: boolean
   required:
     - vm-name
 additionalProperties: false
