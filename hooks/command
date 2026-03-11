@@ -140,9 +140,9 @@ fi
 echo "+++ :anka: Executing commands in $job_image_name"
 set +e
 # script -q forces a PTY so stdout is line-buffered; prevents command output appearing under wrong section
-# Run each newline-separated command from BUILDKITE_COMMAND sequentially via bash -c
 # shellcheck disable=SC2086
-plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" script -q /dev/null bash -c "$BUILDKITE_COMMAND"
+read -ra anka_interpreter <<< "$(plugin_read_config ANKA_INTERPRETER "bash -l -c")"
+plugin_prompt_and_run $ANKA_SUDO anka $ANKA_DEBUG run "${run_args[@]:+${run_args[@]}}" script -q /dev/null "${anka_interpreter[@]}" "$BUILDKITE_COMMAND"
 command_exit_code=$?
 set -e
 

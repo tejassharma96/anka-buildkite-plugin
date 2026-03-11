@@ -80,6 +80,7 @@ Hook | Description
 | `modify-cpu` | Stop VM, set CPU cores, then run commands. | `6` |
 | `modify-ram` | Stop VM, set memory (G), then run commands. | `32` |
 | `modify-mac` | Stop VM, set MAC address, then run commands. | `00:1B:44:11:3A:B7` |
+| `anka-interpreter` | Shell (or other interpreter) used to execute `BUILDKITE_COMMAND` inside the VM. The command string is passed as the final argument, so include `-c` (or equivalent) if using a shell. Defaults to `bash -l -c`. | `zsh -l -c` |
 | `ec2-networking` | Add a static route in the VM so it can reach the EC2 Instance Metadata Service (`169.254.169.254`) via the host gateway. Auto-detected: defaults to `true` on EC2, `false` elsewhere. Set explicitly to override. | `true` |
 
 **Deprecated and removed (v2.0.0):** `workdir`, `workdir-create`, `bash-interactive`, `pre-execute-sleep`, `pre-execute-ping-sleep`, `wait-network`, `volume`, `no-volume`
